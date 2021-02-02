@@ -1,8 +1,7 @@
 import { createReadStream, PathLike } from "fs";
 import { createInterface } from "readline";
 
-const functionCallLineRegexp = /.+,([a-zA-Z]+\s.+:[0-9]+:[0-9]+)/;
-const functionCallSegmentRegexp = /[a-zA-Z]+\s.+:[0-9]+:[0-9]+/;
+const filePathLineRegexp = /.+,.*\s.+:[0-9]+:[0-9]+,/;
 
 export const findUserCode = (pathToProfileLogFile: PathLike, pathGlob: RegExp): Promise<string[]> => {
   return new Promise((resolve) => {
@@ -11,9 +10,7 @@ export const findUserCode = (pathToProfileLogFile: PathLike, pathGlob: RegExp): 
     const results: string[] = [];
 
     readline.on("line", (line: string) => {
-      if (!functionCallLineRegexp.test(line)) return;
-      const fileReference = line.split(",").find((s) => functionCallSegmentRegexp.test(s));
-      if (fileReference && pathGlob.test(fileReference)) results.push(line);
+      if (filePathLineRegexp.test(line) && pathGlob.test(line)) results.push(line);
     });
 
     readline.on("close", () => {
